@@ -69,6 +69,28 @@ git clone https://github.com/Vrushi0912/DupliDetect-AI.git
 cd DupliDetect-AI
 ```
 
+## 🌐 Deployment Guide (Recommended)
+
+To handle large AI models and high-performance React hosting, we recommend the following split:
+
+### A. Backend (Render)
+1. **Create a New Web Service** on [Render](https://render.com).
+2. Connect this GitHub repository.
+3. Render will detect the `backend/Dockerfile` automatically.
+4. **Important**: Set the **Root Directory** to `backend` in the Render dashboard settings.
+5. Once deployed, copy your Render URL (e.g., `https://your-app.onrender.com`).
+
+### B. Frontend (Vercel)
+1. **Create a New Project** on [Vercel](https://vercel.com).
+2. Connect this GitHub repository.
+3. In the "Project Settings":
+   - Set **Root Directory** to `frontend`.
+   - Add an **Environment Variable**: 
+     - Key: `REACT_APP_API_URL`
+     - Value: `https://your-app.onrender.com` (Your Render URL)
+4. Deploy!
+
+## 🚀 Local Installation
 ### 2. Backend Setup (AI Engine)
 Navigate to the backend directory, install the required packages, and start the FastAPI server.
 
