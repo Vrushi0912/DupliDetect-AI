@@ -1,0 +1,9 @@
+.app {
+  width: 100%;
+  min-height: 100vh;
+  background: transparent;
+  position: relative;
+  /* Remove overflow: hidden here so height can grow correctly with the body 
+     if true sticky/fixed elements need it. But overflow-x: hidden is safer */
+  overflow-x: hidden;
+}

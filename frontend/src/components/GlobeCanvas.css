@@ -1,0 +1,14 @@
+.globe-canvas {
+  display: block;
+  width: 480px;
+  height: 480px;
+  filter: drop-shadow(0 0 40px rgba(59, 130, 246, 0.35))
+          drop-shadow(0 0 80px rgba(124, 58, 237, 0.2));
+}
+
+@media (max-width: 900px) {
+  .globe-canvas {
+    width: 320px;
+    height: 320px;
+  }
+}
