@@ -23,7 +23,10 @@
 import axios from 'axios';
 
 // ── Base configuration ─────────────────────────────────────────────────────────
-const BASE_URL = 'http://localhost:8000';
+const BASE_URL = window.location.hostname === 'localhost' 
+  ? 'http://localhost:8000' 
+  : window.location.origin;
+
 
 const client = axios.create({
   baseURL: BASE_URL,
