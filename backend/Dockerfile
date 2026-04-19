@@ -34,4 +34,4 @@ EXPOSE 8000
 
 # Command to run the application using the $PORT provided by Render
 # We use the shell form here to ensure $PORT is expanded
-CMD uvicorn main:app --host 0.0.0.0 --port ${PORT}
+CMD python -m uvicorn main:app --host 0.0.0.0 --port ${PORT}

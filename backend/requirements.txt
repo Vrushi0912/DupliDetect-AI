@@ -5,3 +5,6 @@ scikit-learn
 sentence-transformers
 faiss-cpu
 deep-translator
+fastapi
+uvicorn
+python-multipart
