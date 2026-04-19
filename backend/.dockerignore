@@ -1,0 +1,17 @@
+# Python specific
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.env
+.venv
+env/
+
+# Data files
+*.csv
+*.xlsx
+*.docx
+*.zip
+
+# Logs
+*.log

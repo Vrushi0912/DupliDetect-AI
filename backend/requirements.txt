@@ -1,4 +1,5 @@
-streamlit
+# streamlit removed to save memory
+
 pandas
 scikit-learn
 sentence-transformers
