@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import './UploadSection.css';
 import { detectDuplicates } from '../api/apiClient';
 import { auth } from '../firebase';

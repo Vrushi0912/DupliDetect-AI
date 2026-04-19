@@ -31,7 +31,7 @@ const Navbar = () => {
       <ul className="navbar__links">
         <li><a href="#home" className="navbar__link navbar__link--active">Home</a></li>
         <li><a href="#how" className="navbar__link">How It Works</a></li>
-        <li><a href="#" className="navbar__link" onClick={(e) => { e.preventDefault(); navigate('/dashboard'); }}>Dashboard</a></li>
+        <li><a href="#dashboard" className="navbar__link" onClick={(e) => { e.preventDefault(); navigate('/dashboard'); }}>Dashboard</a></li>
         <li><a href="#pricing" className="navbar__link">Pricing</a></li>
         <li><a href="#contact" className="navbar__link">Contact</a></li>
       </ul>

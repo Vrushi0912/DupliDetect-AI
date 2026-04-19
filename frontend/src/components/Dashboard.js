@@ -24,7 +24,7 @@ import './UploadSection.css';
 import { detectDuplicates, translateTexts, LANGUAGE_MAP } from '../api/apiClient';
 import { auth, db } from '../firebase';
 import { signOut } from 'firebase/auth';
-import { collection, addDoc, serverTimestamp, query, where, getDocs, orderBy, limit } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 
 // ── Sidebar step definitions ───────────────────────────────────────────────────
 const DASHBOARD_STEPS = [

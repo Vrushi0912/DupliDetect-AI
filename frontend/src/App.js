@@ -4,7 +4,6 @@ import './index.css';
 import './App.css';
 import Navbar from './components/Navbar';
 import HeroSection from './components/HeroSection';
-import StatsBar from './components/StatsBar';
 import FeaturesSection from './components/FeaturesSection';
 import HowItWorks from './components/HowItWorks';
 import UploadSection from './components/UploadSection';
