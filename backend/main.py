@@ -89,8 +89,9 @@ async def detect_duplicates(
         })
 
     try:
-        raw = await file.read()
-        df = pd.read_csv(io.BytesIO(raw))
+        # Optimization: Pass the spooled temporary file directly to pandas
+        # This avoids reading the entire file into memory as a bytes object
+        df = pd.read_csv(file.file)
         t0 = time.time()
 
         # ── Auto-detect text column (mirrors app.py logic exactly) ────────────
@@ -103,8 +104,16 @@ async def detect_duplicates(
 
         texts = df[col].astype(str).str.lower().str.strip().tolist()
 
+        # Optimization: Only calculate embeddings for unique texts to drastically slash processing time!
+        # This allows datasets with exact duplicates to process significantly faster.
+        unique_texts = list(dict.fromkeys(texts))  # preserves order better than set, though not strictly required
+
         # ── Step 1: Embeddings (model.py — unmodified) ────────────────────────
-        embeddings = get_embeddings(texts)
+        unique_embeddings = get_embeddings(unique_texts)
+        
+        # Map generated embeddings back to the original text sequence
+        emb_dict = {t: e for t, e in zip(unique_texts, unique_embeddings)}
+        embeddings = [emb_dict[t] for t in texts]
 
         # ── Step 2: Find duplicates (utils.py — unmodified) ───────────────────
         labels = find_duplicates_faiss(embeddings)
