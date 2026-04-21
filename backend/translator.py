@@ -1,34 +1,48 @@
 from deep_translator import GoogleTranslator
-from concurrent.futures import ThreadPoolExecutor, as_completed
+import concurrent.futures
 
-def _translate_one(text, target_lang):
-    """Translate a single text string, with safe fallback."""
+def _translate_single(t, target_lang):
     try:
-        t = str(text).strip()
-        if not t:
-            return text
-        result = GoogleTranslator(source='auto', target=target_lang).translate(t)
+        t_str = str(t).strip()
+        if not t_str:
+            return t
+        
+        translator = GoogleTranslator(source='auto', target=target_lang)
+        result = translator.translate(t_str)
+        
         if result is None or result.strip() == "":
-            return text
+            return t
         return result
     except Exception:
-        return text
+        return t
 
+def translate_batch(texts, target_lang):
+    # Performance Optimization: Only translate UNIQUE strings
+    # This prevents sending redundant network requests for identical rows
+    unique_texts = list(set([str(t).strip() for t in texts if str(t).strip()]))
+    
+    translated_map = {}
+    
+    # Use ThreadPoolExecutor to drastically speed up translation via concurrent requests
+    with concurrent.futures.ThreadPoolExecutor(max_workers=50) as executor:
+        # submit tasks
+        futures = {executor.submit(_translate_single, t, target_lang): t for t in unique_texts}
+        
+        # gather results into our map
+        for future in concurrent.futures.as_completed(futures):
+            original_text = futures[future]
+            try:
+                translated_map[original_text] = future.result()
+            except Exception:
+                translated_map[original_text] = original_text
 
-def translate_batch(texts, target_lang, max_workers=10):
-    """
-    Translate a list of texts in PARALLEL using a thread pool.
-    Falls back to original text on any error.
-    """
-    results = [None] * len(texts)
+    # Map back to the original full list
+    translated = []
+    for t in texts:
+        t_str = str(t).strip()
+        if not t_str:
+            translated.append(t)
+        else:
+            translated.append(translated_map.get(t_str, t))
 
-    with ThreadPoolExecutor(max_workers=max_workers) as executor:
-        future_to_idx = {
-            executor.submit(_translate_one, text, target_lang): idx
-            for idx, text in enumerate(texts)
-        }
-        for future in as_completed(future_to_idx):
-            idx = future_to_idx[future]
-            results[idx] = future.result()
-
-    return results
+    return translated

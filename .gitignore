@@ -15,6 +15,7 @@ backend/*.csv
 backend/*.xlsx
 backend/*.docx
 backend/*.bat
+backend/.env*
 
 # Misc
 .DS_Store

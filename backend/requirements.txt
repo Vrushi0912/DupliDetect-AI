@@ -1,19 +1,16 @@
-# DupliDetect — Backend (FastAPI wrapper) dependencies
-# Install: pip install -r requirements.txt
 
-# ── Web framework ──────────────────────────────────────────────────────────────
-fastapi>=0.111.0
-uvicorn[standard]>=0.29.0
-python-multipart>=0.0.9   # multipart/form-data (file upload)
-
-# ── Data / ML ─────────────────────────────────────────────────────────────────
-pandas>=2.0.0
-sentence-transformers>=2.7.0
-faiss-cpu>=1.8.0
-scikit-learn>=1.4.0
-
-# ── Translation ────────────────────────────────────────────────────────────────
-deep-translator>=1.11.4
-
-# ── Pydantic (bundled with FastAPI, pinned for stability) ─────────────────────
-pydantic>=2.0.0
+streamlit
+pandas
+numpy
+sentence-transformers>=3.0.0
+faiss-cpu
+torch
+deep-translator
+transformers
+onnxruntime
+optimum[onnxruntime]
+  
+fastapi>=0.111.0  
+uvicorn[standard]>=0.29.0  
+python-multipart>=0.0.9 
+python-dotenv

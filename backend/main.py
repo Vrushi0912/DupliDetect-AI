@@ -19,6 +19,11 @@ from typing import List, Optional
 import pandas as pd
 import io
 import time
+import os
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 # ── Import existing, unmodified core logic ─────────────────────────────────────
 from model import get_embeddings
@@ -89,9 +94,8 @@ async def detect_duplicates(
         })
 
     try:
-        # Optimization: Pass the spooled temporary file directly to pandas
-        # This avoids reading the entire file into memory as a bytes object
-        df = pd.read_csv(file.file)
+        raw = await file.read()
+        df = pd.read_csv(io.BytesIO(raw))
         t0 = time.time()
 
         # ── Auto-detect text column (mirrors app.py logic exactly) ────────────
@@ -104,22 +108,26 @@ async def detect_duplicates(
 
         texts = df[col].astype(str).str.lower().str.strip().tolist()
 
-        # Optimization: Only calculate embeddings for unique texts to drastically slash processing time!
-        # This allows datasets with exact duplicates to process significantly faster.
-        unique_texts = list(dict.fromkeys(texts))  # preserves order better than set, though not strictly required
-
         # ── Step 1: Embeddings (model.py — unmodified) ────────────────────────
-        unique_embeddings = get_embeddings(unique_texts)
-        
-        # Map generated embeddings back to the original text sequence
-        emb_dict = {t: e for t, e in zip(unique_texts, unique_embeddings)}
-        embeddings = [emb_dict[t] for t in texts]
+        embeddings = get_embeddings(texts)
 
         # ── Step 2: Find duplicates (utils.py — unmodified) ───────────────────
         labels = find_duplicates_faiss(embeddings)
 
         total_time = time.time() - t0
         df["group"] = labels
+
+        # Create a preview of embeddings to include in the response
+        emb_previews = []
+        for e in embeddings:
+            try:
+                e_len = len(e)
+                preview = f"[{float(e[0]):.4f}, {float(e[1]):.4f}, ..., {float(e[-1]):.4f}] (size: {e_len})"
+                emb_previews.append(preview)
+            except:
+                emb_previews.append("[Vector generation failed]")
+        
+        df["embedding_vector"] = emb_previews
 
         # ── Build response datasets ───────────────────────────────────────────
         all_records  = df.to_dict(orient="records")
@@ -172,7 +180,7 @@ async def translate_texts(req: TranslationRequest):
         )
     try:
         # translator.py — unmodified
-        result = translate_batch(req.texts, req.target_lang, req.max_workers)
+        result = translate_batch(req.texts, req.target_lang)
         return {
             "status": "success",
             "message": "Translation completed successfully.",
@@ -191,4 +199,8 @@ async def translate_texts(req: TranslationRequest):
 # ── Dev entry-point ────────────────────────────────────────────────────────────
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000, reload=True)
+    host = os.getenv("HOST", "0.0.0.0")
+    port = int(os.getenv("PORT", 8000))
+    reload = os.getenv("DEBUG", "True").lower() == "true"
+    
+    uvicorn.run("main:app", host=host, port=port, reload=reload)
