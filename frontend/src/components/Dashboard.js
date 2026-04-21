@@ -6,11 +6,8 @@ import {
   Globe,
   Settings,
   Cpu,
-  Layers,
   Copy,
   Package,
-  Target,
-  PieChart,
   Download,
   Bell,
   LogOut,
@@ -33,38 +30,33 @@ const DASHBOARD_STEPS = [
   { id: 'languages',   label: 'Detect Languages',    icon: Globe     },
   { id: 'preprocess',  label: 'Preprocess Text',     icon: Settings  },
   { id: 'embeddings',  label: 'Generate Embeddings', icon: Cpu       },
-  { id: 'similarity',  label: 'Calculate Similarity',icon: Layers    },
   { id: 'duplicates',  label: 'Identify Duplicates', icon: Copy      },
   { id: 'clusters',    label: 'Create Clusters',     icon: Package   },
-  { id: 'confidence',  label: 'Confidence Score',    icon: Target    },
-  { id: 'visualize',   label: 'Visualize Results',   icon: PieChart  },
   { id: 'export',      label: 'Export Dataset',      icon: Download  },
 ];
 
 // ── Small helper: generic data table ──────────────────────────────────────────
 function DataTable({ rows, maxRows = 200 }) {
   if (!rows || rows.length === 0) {
-    return <p style={{ color: '#94a3b8', textAlign: 'center' }}>No data to display.</p>;
+    return <p style={{ color: '#94a3b8', textAlign: 'center', padding: '24px', background: 'rgba(255,255,255,0.02)', borderRadius: '12px' }}>No data to display.</p>;
   }
   const cols = Object.keys(rows[0]);
   const visible = rows.slice(0, maxRows);
   return (
-    <div style={{ overflowX: 'auto', maxHeight: 420, overflowY: 'auto', borderRadius: 8, border: '1px solid rgba(255,255,255,0.08)' }}>
-      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
-        <thead style={{ position: 'sticky', top: 0, background: '#1e1b4b' }}>
+    <div className="data-table-wrapper">
+      <table className="data-table">
+        <thead>
           <tr>
             {cols.map((c) => (
-              <th key={c} style={{ padding: '10px 14px', textAlign: 'left', color: '#a5b4fc', fontWeight: 600, borderBottom: '1px solid rgba(255,255,255,0.1)', whiteSpace: 'nowrap' }}>
-                {c}
-              </th>
+              <th key={c}>{c.replace(/_/g, ' ')}</th>
             ))}
           </tr>
         </thead>
         <tbody>
           {visible.map((row, i) => (
-            <tr key={i} style={{ background: i % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.02)' }}>
+            <tr key={i}>
               {cols.map((c) => (
-                <td key={c} style={{ padding: '9px 14px', color: '#e2e8f0', borderBottom: '1px solid rgba(255,255,255,0.05)', maxWidth: 260, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                <td key={c} title={String(row[c] ?? '')}>
                   {String(row[c] ?? '')}
                 </td>
               ))}
@@ -73,7 +65,7 @@ function DataTable({ rows, maxRows = 200 }) {
         </tbody>
       </table>
       {rows.length > maxRows && (
-        <p style={{ textAlign: 'center', color: '#64748b', padding: 10, fontSize: 12 }}>
+        <p style={{ textAlign: 'center', color: '#64748b', padding: 12, fontSize: 13, background: 'rgba(15,23,42,0.6)' }}>
           Showing {maxRows} of {rows.length} rows
         </p>
       )}
@@ -397,31 +389,16 @@ const Dashboard = () => {
               {translateError && <p style={{ color: '#f87171', marginBottom: 14 }}>⚠ {translateError}</p>}
 
               {translated && (
-                <>
-                  <h3 style={{ color: '#e2e8f0', marginBottom: 10 }}>Translation Results (first 50 rows)</h3>
-                  <div style={{ overflowX: 'auto', maxHeight: 380, overflowY: 'auto', borderRadius: 8, border: '1px solid rgba(255,255,255,0.08)' }}>
-                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
-                      <thead style={{ position: 'sticky', top: 0, background: '#1e1b4b' }}>
-                        <tr>
-                          <th style={{ padding: '10px 14px', textAlign: 'left', color: '#a5b4fc', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>Original</th>
-                          <th style={{ padding: '10px 14px', textAlign: 'left', color: '#a5b4fc', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>{targetLang} Translation</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {translated.map((t, i) => {
-                          const originalRow = result.clean[i] ?? {};
-                          const original = String(Object.values(originalRow)[1] ?? Object.values(originalRow)[0] ?? '');
-                          return (
-                            <tr key={i} style={{ background: i % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.02)' }}>
-                              <td style={{ padding: '9px 14px', color: '#cbd5e1', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>{original}</td>
-                              <td style={{ padding: '9px 14px', color: '#e2e8f0', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>{t}</td>
-                            </tr>
-                          );
-                        })}
-                      </tbody>
-                    </table>
-                  </div>
-                </>
+                <div style={{ animation: 'dashFadeIn 0.5s ease' }}>
+                  <h3 style={{ color: '#e2e8f0', marginBottom: 16 }}>Translation Results (first 50 rows)</h3>
+                  <DataTable rows={translated.map((t, i) => {
+                    const originalRow = result.clean[i] ?? {};
+                    return {
+                      ...originalRow,
+                      [`translated_${targetLang.toLowerCase()}`]: t
+                    };
+                  })} />
+                </div>
               )}
             </>
           )}
@@ -432,10 +409,7 @@ const Dashboard = () => {
     // ── All other steps: show results table if available, else placeholder ───
     const stepResultMap = {
       embeddings:  { title: 'Generated Embeddings',    data: result?.records,    note: 'Semantic vectors computed via paraphrase-multilingual-MiniLM-L12-v2.' },
-      similarity:  { title: 'Similarity Calculation',  data: result?.records,    note: 'Cosine similarity computed via FAISS IndexFlatIP.' },
       clusters:    { title: 'Duplicate Clusters',      data: result?.duplicates, note: 'Records grouped by semantic similarity group ID.' },
-      confidence:  { title: 'Confidence Scores',       data: result?.records,    note: 'Group IDs act as cluster confidence labels (threshold: 0.7).' },
-      visualize:   { title: 'Result Visualization',    data: result?.records,    note: 'Raw result table — chart library integration coming soon.' },
       preprocess:  { title: 'Preprocessed Records',    data: result?.records,    note: 'Text lowercased and stripped before embedding.' },
     };
 
